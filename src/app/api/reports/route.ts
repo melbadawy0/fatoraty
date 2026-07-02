@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 
+interface Invoice {
+  id: string;
+  invoiceNumber?: string;
+  date?: string;
+  vendor?: string;
+  total?: number;
+  currency?: string;
+  category?: string;
+  createdAt?: Timestamp;
+  [key: string]: any;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
@@ -23,10 +35,9 @@ export async function GET(req: NextRequest) {
     );
 
     const snap = await getDocs(q);
-    const invoices = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const invoices: Invoice[] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
     if (format === "excel") {
-      // Return JSON that frontend will convert to Excel
       return NextResponse.json({
         type: "excel",
         data: invoices,
@@ -43,9 +54,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Default JSON
-    const total = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+    const total = invoices.reduce((sum: number, inv: Invoice) => sum + (inv.total || 0), 0);
     const byCategory: Record<string, number> = {};
-    invoices.forEach((inv) => {
+    invoices.forEach((inv: Invoice) => {
       const cat = inv.category || "other";
       byCategory[cat] = (byCategory[cat] || 0) + (inv.total || 0);
     });

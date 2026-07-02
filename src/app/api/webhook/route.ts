@@ -213,10 +213,20 @@ async function handleReportRequest(phone: string, userId: string) {
 
     let categoryText = "";
     Object.entries(byCategory).forEach(([cat, amount]) => {
-      categoryText += `• ${cat}: ${amount.toFixed(2)} EGP\n`;
+      categoryText += `• ${cat}: ${amount.toFixed(2)} EGP
+`;
     });
 
-    await sendWhatsAppMessage(phone, `📊 Monthly Report (${now.toLocaleString("default", { month: "long" })} ${now.getFullYear()})\n\n🧾 Total Invoices: ${count}\n💰 Total Spent: ${total.toFixed(2)} EGP\n\n📂 By Category:\n${categoryText || "No data"}\n\n📥 Download full report:\nfatoraty.vercel.app/dashboard`);
+    await sendWhatsAppMessage(phone, `📊 Monthly Report (${now.toLocaleString("default", { month: "long" })} ${now.getFullYear()})
+
+🧾 Total Invoices: ${count}
+💰 Total Spent: ${total.toFixed(2)} EGP
+
+📂 By Category:
+${categoryText || "No data"}
+
+📥 Download full report:
+fatoraty.vercel.app/dashboard`);
 
     return NextResponse.json({ status: "ok" });
   } catch (error) {
@@ -227,7 +237,19 @@ async function handleReportRequest(phone: string, userId: string) {
 }
 
 async function handleUpgradeRequest(phone: string, userId: string) {
-  await sendWhatsAppMessage(phone, `💎 Fatoraty Premium\n\n✅ Unlimited invoices\n✅ Excel & PDF exports\n✅ Priority support\n✅ Advanced analytics\n\n💰 $5/month or $50/year\n\nUpgrade here:\nfatoraty.vercel.app/upgrade?user=${userId}\n\nOr pay via:
+  await sendWhatsAppMessage(phone, `💎 Fatoraty Premium
+
+✅ Unlimited invoices
+✅ Excel & PDF exports
+✅ Priority support
+✅ Advanced analytics
+
+💰 $5/month or $50/year
+
+Upgrade here:
+fatoraty.vercel.app/upgrade?user=${userId}
+
+Or pay via:
 • Vodafone Cash: 0100XXXXXXX
 • InstaPay: fatoraty@instapay`);
 
