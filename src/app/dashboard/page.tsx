@@ -7,13 +7,22 @@ import { Download, FileText, TrendingUp, Calendar } from "lucide-react";
 
 interface Invoice {
   id: string;
-  invoiceNumber: string;
-  date: string;
-  vendor: string;
-  total: number;
-  currency: string;
-  category: string;
-  createdAt: Timestamp;
+  invoiceNumber?: string;
+  date?: string;
+  vendor?: string;
+  total?: number;
+  currency?: string;
+  category?: string;
+  createdAt?: Timestamp | Date | { seconds: number; nanoseconds: number } | any;
+}
+
+function toDate(value: any): Date | null {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (value.toDate && typeof value.toDate === "function") return value.toDate();
+  if (value.seconds) return new Date(value.seconds * 1000);
+  if (typeof value === "string" || typeof value === "number") return new Date(value);
+  return null;
 }
 
 export default function Dashboard() {
@@ -45,7 +54,8 @@ export default function Dashboard() {
 
   const total = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
   const thisMonth = invoices.filter((inv) => {
-    const d = inv.createdAt?.toDate?.() || new Date(inv.createdAt);
+    const d = toDate(inv.createdAt);
+    if (!d) return false;
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
@@ -59,15 +69,16 @@ export default function Dashboard() {
   function downloadExcel() {
     const headers = ["Invoice #", "Date", "Vendor", "Category", "Total", "Currency"];
     const rows = invoices.map((inv) => [
-      inv.invoiceNumber,
-      inv.date,
-      inv.vendor,
-      inv.category,
-      inv.total,
-      inv.currency,
+      inv.invoiceNumber || "",
+      inv.date || "",
+      inv.vendor || "",
+      inv.category || "",
+      inv.total || 0,
+      inv.currency || "",
     ]);
 
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("
+");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -166,16 +177,16 @@ export default function Dashboard() {
                 <tbody className="divide-y divide-gray-700">
                   {invoices.map((inv) => (
                     <tr key={inv.id} className="hover:bg-gray-700/30">
-                      <td className="px-6 py-4 font-mono text-sm">{inv.invoiceNumber}</td>
-                      <td className="px-6 py-4 text-sm text-gray-300">{inv.date}</td>
-                      <td className="px-6 py-4 text-sm">{inv.vendor}</td>
+                      <td className="px-6 py-4 font-mono text-sm">{inv.invoiceNumber || "N/A"}</td>
+                      <td className="px-6 py-4 text-sm text-gray-300">{inv.date || "N/A"}</td>
+                      <td className="px-6 py-4 text-sm">{inv.vendor || "Unknown"}</td>
                       <td className="px-6 py-4">
                         <span className="inline-flex px-2 py-1 rounded-full text-xs bg-gray-700 capitalize">
-                          {inv.category}
+                          {inv.category || "other"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right font-medium">
-                        {inv.total.toFixed(2)} {inv.currency}
+                        {(inv.total || 0).toFixed(2)} {inv.currency || "EGP"}
                       </td>
                     </tr>
                   ))}
